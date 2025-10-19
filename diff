@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>EDUC 134 – Theory Draw</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif;margin:0;background:#f8fafc}
+    .card{max-width:640px;margin:24px auto;padding:20px;background:#fff;border-radius:12px;
+          box-shadow:0 2px 12px rgba(0,0,0,.06)}
+    h1{font-size:1.25rem;margin:0 0 8px}
+    p{margin:.5rem 0}
+    button{background:#2563eb;color:#fff;border:0;border-radius:8px;padding:10px 16px;cursor:pointer}
+    button:active{transform:translateY(1px)}
+    .out p{margin:.75rem 0}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🎴 AI-Inspired Theory Draw</h1>
+    <p>Click the button to draw two random learning-science theories and quick reminders of what each means.</p>
+    <button id="btn">🤖 Draw 2 Theories</button>
+    <div id="out" class="out" aria-live="polite"></div>
+  </div>
+
+  <script>
+    const THEORIES = [
+      {name:"Vygotsky – Zone of Proximal Development",desc:"Design scaffolds that help learners stretch just beyond what they can do alone."},
+      {name:"Bransford et al. – Four Lenses of Learning Environments",desc:"Balance learner-, knowledge-, assessment-, and community-centered design."},
+      {name:"Self-Determination Theory (Deci & Ryan)",desc:"Support autonomy, competence, and relatedness to boost motivation."},
+      {name:"Rogoff – Guided Participation",desc:"Learning grows through shared activity and gradual involvement in community practices."},
+      {name:"Lave & Wenger – Communities of Practice",desc:"Participation and identity within a community drive learning over time."},
+      {name:"Gee – Affinity Spaces",desc:"People learn around shared interests in open, fluid, often digital networks."},
+      {name:"Mayer – Multimedia Learning",desc:"Use words + visuals well; reduce extraneous load; segment and signal key ideas."},
+      {name:"Sawyer – Learning Sciences Design Cycle",desc:"Iterate: observe → design → test → refine in authentic contexts."},
+      {name:"Schunk – Self-Efficacy",desc:"Beliefs about capability shape effort, persistence, and achievement."},
+      {name:"Hutchins – Distributed Cognition",desc:"Thinking is distributed across people, tools, and the environment."},
+      {name:"Other",desc:"Choose a relevant concept not listed (e.g., ICAP, Cognitive Load) and justify the link."}
+    ];
+
+    const btn = document.getElementById('btn');
+    const out = document.getElementById('out');
+
+    btn.addEventListener('click', () => {
+      const pool = [...THEORIES];
+      const pick = () => pool.splice(Math.floor(Math.random()*pool.length),1)[0];
+      const a = pick(), b = pick();
+      out.innerHTML = `
+        <p><strong>1️⃣ ${a.name}</strong><br>${a.desc}</p>
+        <p><strong>2️⃣ ${b.name}</strong><br>${b.desc}</p>
+      `;
+    });
+  </script>
+</body>
+</html>
