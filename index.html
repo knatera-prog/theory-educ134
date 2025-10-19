@@ -3,53 +3,110 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>EDUC 134 – Theory Draw</title>
+  <title>EDUC 134 – Theory Card Draw</title>
   <style>
-    body{font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif;margin:0;background:#f8fafc}
-    .card{max-width:640px;margin:24px auto;padding:20px;background:#fff;border-radius:12px;
-          box-shadow:0 2px 12px rgba(0,0,0,.06)}
-    h1{font-size:1.25rem;margin:0 0 8px}
-    p{margin:.5rem 0}
-    button{background:#2563eb;color:#fff;border:0;border-radius:8px;padding:10px 16px;cursor:pointer}
-    button:active{transform:translateY(1px)}
-    .out p{margin:.75rem 0}
+    :root{
+      --bg:#f7fafc; --card:#ffffff; --ink:#0f172a; --brand:#2563eb; --muted:#475569;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+    .wrap{max-width:860px;margin:28px auto;padding:0 16px}
+    .card{background:var(--card);border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.06);padding:22px}
+    h1{margin:0 0 8px;font-size:1.45rem;color:#1e40af}
+    p.lead{margin:0 0 16px;color:var(--muted);line-height:1.55}
+    .controls{display:flex;gap:10px;align-items:center;margin:8px 0 18px}
+    button{background:var(--brand);color:#fff;border:0;border-radius:10px;padding:10px 16px;font-size:1rem;cursor:pointer}
+    button:hover{filter:brightness(.95)}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(240px,1fr));gap:18px}
+    /* Flip card */
+    .flipwrap{perspective:1200px;height:240px}
+    .flip{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.2,.6,.2,1)}
+    .flipwrap.revealed .flip{transform:rotateY(180deg)}
+    .face{position:absolute;inset:0;border-radius:14px;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:18px;text-align:center;backface-visibility:hidden}
+    .front{background:linear-gradient(135deg,#e2e8f0,#ffffff);border:2px dashed #cbd5e1;color:#334155}
+    .front .emoji{font-size:1.8rem;margin-bottom:8px}
+    .back{background:#ffffff;border:2px solid #e2e8f0;transform:rotateY(180deg)}
+    .name{font-weight:700;margin:2px 0 6px}
+    .desc{color:var(--muted);line-height:1.5}
+    .hint{font-size:.9rem;color:var(--muted)}
+    .foot{margin-top:16px;color:var(--muted);font-size:.95rem}
+    @media (max-width:640px){ .grid{grid-template-columns:1fr} .flipwrap{height:220px} }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>🎴 AI-Inspired Theory Draw</h1>
-    <p>Click the button to draw two random learning-science theories and quick reminders of what each means.</p>
-    <button id="btn">🤖 Draw 2 Theories</button>
-    <div id="out" class="out" aria-live="polite"></div>
+  <div class="wrap">
+    <div class="card">
+      <h1>🎴 EDUC 134 – Theory Card Draw</h1>
+      <p class="lead"><strong>Purpose:</strong> Draw two cards and flip them to reveal
+        <em>learning-science frameworks</em> that can anchor your intervention design.
+        Use this in <strong>Day 2: Design Studio</strong> as you refine your prototype.</p>
+
+      <div class="controls">
+        <button id="draw">🤖 Draw Again</button>
+        <span class="hint">Click any card to flip.</span>
+      </div>
+
+      <div class="grid" id="grid">
+        <!-- cards injected here -->
+      </div>
+
+      <div class="foot">Prompt: “Our design reflects this theory because… <em>(point to a specific step, tool, or routine)</em>”</div>
+    </div>
   </div>
 
   <script>
     const THEORIES = [
       {name:"Vygotsky – Zone of Proximal Development",desc:"Design scaffolds that help learners stretch just beyond what they can do alone."},
-      {name:"Bransford et al. – Four Lenses of Learning Environments",desc:"Balance learner-, knowledge-, assessment-, and community-centered design."},
+      {name:"Bransford et al. – Four Lenses",desc:"Balance learner-, knowledge-, assessment-, and community-centered design."},
       {name:"Self-Determination Theory (Deci & Ryan)",desc:"Support autonomy, competence, and relatedness to boost motivation."},
       {name:"Rogoff – Guided Participation",desc:"Learning grows through shared activity and gradual involvement in community practices."},
       {name:"Lave & Wenger – Communities of Practice",desc:"Participation and identity within a community drive learning over time."},
       {name:"Gee – Affinity Spaces",desc:"People learn around shared interests in open, fluid, often digital networks."},
       {name:"Mayer – Multimedia Learning",desc:"Use words + visuals well; reduce extraneous load; segment and signal key ideas."},
-      {name:"Sawyer – Learning Sciences Design Cycle",desc:"Iterate: observe → design → test → refine in authentic contexts."},
+      {name:"Sawyer – LS Design Cycle",desc:"Iterate: observe → design → test → refine in authentic contexts."},
       {name:"Schunk – Self-Efficacy",desc:"Beliefs about capability shape effort, persistence, and achievement."},
       {name:"Hutchins – Distributed Cognition",desc:"Thinking is distributed across people, tools, and the environment."},
-      {name:"Other",desc:"Choose a relevant concept not listed (e.g., ICAP, Cognitive Load) and justify the link."}
+      {name:"Other",desc:"Choose another course concept (e.g., ICAP, Cognitive Load) and justify the link."}
     ];
 
-    const btn = document.getElementById('btn');
-    const out = document.getElementById('out');
+    const grid = document.getElementById('grid');
+    const drawBtn = document.getElementById('draw');
 
-    btn.addEventListener('click', () => {
+    function drawTwo() {
+      // pick two distinct at random
       const pool = [...THEORIES];
       const pick = () => pool.splice(Math.floor(Math.random()*pool.length),1)[0];
-      const a = pick(), b = pick();
-      out.innerHTML = `
-        <p><strong>1️⃣ ${a.name}</strong><br>${a.desc}</p>
-        <p><strong>2️⃣ ${b.name}</strong><br>${b.desc}</p>
+      return [pick(), pick()];
+    }
+
+    function render() {
+      const [a,b] = drawTwo();
+      grid.innerHTML = [a,b].map(makeCard).join('');
+      // attach listeners to enable flip
+      [...grid.querySelectorAll('.flipwrap')].forEach(wrap => {
+        wrap.addEventListener('click', () => wrap.classList.toggle('revealed'));
+      });
+    }
+
+    function makeCard(t) {
+      return `
+        <div class="flipwrap" role="button" tabindex="0" aria-label="Flip card to reveal theory">
+          <div class="flip">
+            <div class="face front">
+              <div class="emoji">🂠</div>
+              <div>Tap to reveal</div>
+            </div>
+            <div class="face back">
+              <div class="name">${t.name}</div>
+              <div class="desc">${t.desc}</div>
+            </div>
+          </div>
+        </div>
       `;
-    });
+    }
+
+    drawBtn.addEventListener('click', render);
+    render(); // initial draw on load
   </script>
 </body>
 </html>
